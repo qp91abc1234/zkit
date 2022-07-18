@@ -1,5 +1,13 @@
 <script setup lang="ts">
 import VideoPlayer from '@/components/videoPlayer/videoPlayer.vue'
+
+const ready = () => {
+  console.log('ready')
+}
+
+const pause = () => {
+  console.log('pause')
+}
 </script>
 
 <template>
@@ -7,10 +15,14 @@ import VideoPlayer from '@/components/videoPlayer/videoPlayer.vue'
     <VideoPlayer
       class="video-player"
       :autoplay="false"
-      poster="https://cdn-s3-gjzc.my.99.com/pre-creation-zone/image/62a1ccc539eb820020a5a673.png"
-      path="https://cdn-s3-gjzc.my.99.com/pre-creation-zone/video/62a1ccd739eb820020a5a676.mp4"
-      blur-bg="https://cdn-s3-gjzc.my.99.com/pre-creation-zone/image/62a1ccc539eb820020a5a673.png"
+      poster="https://cdn-s3-gjzc.my.99.com/pre-creation-zone/image/628739e18ac5bc002186acb0.png"
+      path="https://cdn-s3-gjzc.my.99.com/pre-creation-zone/video/628739e18ac5bc002186acb1.mp4"
+      blur-bg="https://cdn-s3-gjzc.my.99.com/pre-creation-zone/image/628739e18ac5bc002186acb0.png"
       :control-bar="{ fullscreenToggle: false }"
+      aspect-ratio="9:16"
+      :events="['pause']"
+      @ready="ready"
+      @pause="pause"
     >
       <div class="water-mask"></div>
     </VideoPlayer>

@@ -62,7 +62,7 @@ const defaultOpts = {
 }
 const defaultEvents = ['canplay', 'play', 'pause', 'ended']
 const mergeOpts = ref<VideoJsPlayerOptions>({})
-const mergeEvents = ref<string[]>([])
+const mergeEvents = ref<Set<string>>()
 
 watch(
   () => {
@@ -120,12 +120,16 @@ const aspectRatioDeal = () => {
   const ratioArr = props.aspectRatio.split(':')
   const ratioW = Number(ratioArr[0])
   const ratioH = Number(ratioArr[1])
-  const width = (videoPlayerRef.value.clientHeight / ratioH) * ratioW
 
-  dom.style.width = `${width}px`
-  dom.style.background = `black`
-  dom.style.left = `50%`
-  dom.style.transform = `translateX(-50%)`
+  const coreFunc = () => {
+    const width = (videoPlayerRef.value.clientHeight / ratioH) * ratioW
+    dom.style.width = `${width}px`
+    dom.style.background = `black`
+    dom.style.left = `50%`
+    dom.style.transform = `translateX(-50%)`
+  }
+  player.value?.on('fullscreenchange', coreFunc)
+  coreFunc()
 }
 
 const customEleDeal = () => {
@@ -138,7 +142,7 @@ const customEleDeal = () => {
 
 const eventDeal = (inst) => {
   inst.emit('ready', player.value)
-  mergeEvents.value.forEach((val) => {
+  mergeEvents.value!.forEach((val) => {
     player.value?.on(val, () => {
       inst.emit(val)
     })
@@ -153,13 +157,22 @@ const clickBg = () => {
   }
 }
 
+const dblclickBg = () => {
+  if (player.value?.isFullscreen()) {
+    player.value?.exitFullscreen()
+  } else {
+    player.value?.requestFullscreen()
+  }
+}
+
 const init = () => {
+  const controlBar = { ...defaultOpts.controlBar, ...props.controlBar }
   mergeOpts.value = {
     ...defaultOpts,
     autoplay: props.autoplay,
     loop: props.loop,
     controls: props.controls,
-    controlBar: { ...defaultOpts.controlBar, ...props.controlBar },
+    controlBar,
     poster: props.poster,
     sources: [
       {
@@ -168,7 +181,7 @@ const init = () => {
       }
     ]
   }
-  mergeEvents.value = [...defaultEvents, ...props.events]
+  mergeEvents.value = new Set([...defaultEvents, ...props.events])
 }
 
 init()
@@ -187,6 +200,7 @@ init()
         'background-image': !!props.blurBg ? `url(${props.blurBg})` : 'none'
       }"
       @click="clickBg"
+      @dblclick="dblclickBg"
     ></div>
     <div ref="customLayoutRef" class="vjs-custom-layout">
       <slot></slot>
