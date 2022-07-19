@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import ScrollView from '@/components/ScrollView/scrollView.vue'
+import ScrollView from '@/components/scrollView/scrollView.vue'
 
 const ope = (type, ev) => {
   console.log(type, ev)
