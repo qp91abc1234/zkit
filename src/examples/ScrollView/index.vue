@@ -41,11 +41,9 @@ const click = () => {
 .scroll-view-wrap {
   width: 100%;
   height: 100%;
-
   .scroll-view {
     width: 400px;
     height: 300px;
-
     .content {
       width: 100%;
       height: 600px;
