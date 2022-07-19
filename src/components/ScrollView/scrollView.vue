@@ -21,9 +21,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   (event: 'loadmore'): void
-  (event: 'wheelscroll', val: any): void
-  (event: 'mousemove', val: any): void
-  (event: 'touchmove', val: any): void
+  (event: 'ope', type: string, e: any): void
 }>()
 
 defineExpose({
@@ -38,11 +36,15 @@ onBeforeUnmount(() => {
   container.value.removeEventListener('scroll', onScroll)
 })
 
-function scrollToPos(pos: number, behavior: 'auto' | 'smooth' = 'auto') {
+function scrollToPos(val: {
+  left?: number
+  top?: number
+  behavior?: 'auto' | 'smooth'
+}) {
   container.value.scrollTo({
-    left: props.vertical ? 0 : pos,
-    top: props.vertical ? pos : 0,
-    behavior
+    left: val.left || 0,
+    top: val.top || 0,
+    behavior: val.behavior || 'auto'
   })
 }
 
@@ -65,7 +67,7 @@ function onScroll() {
 }
 
 function wheelScroll(e) {
-  emit('wheelscroll', e)
+  emit('ope', 'wheelscroll', e)
 }
 
 function mousedown(e) {
@@ -90,7 +92,7 @@ function mousedown(e) {
 
     // 元素永远不会成为鼠标事件的 target
     content.value.style.pointerEvents = 'none'
-    emit('mousemove', ev)
+    emit('ope', 'mousemove', ev)
   }
 
   document.onmouseup = () => {
@@ -101,7 +103,7 @@ function mousedown(e) {
 }
 
 function touchmove(e) {
-  emit('touchmove', e)
+  emit('ope', 'touchmove', e)
 }
 
 smoothscroll.polyfill()

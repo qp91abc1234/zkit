@@ -1,16 +1,8 @@
 <script setup lang="ts">
 import ScrollView from '@/components/ScrollView/scrollView.vue'
 
-const mousemove = () => {
-  console.log('mousemove')
-}
-
-const touchmove = () => {
-  console.log('touchmove')
-}
-
-const wheelscroll = () => {
-  console.log('wheelscroll')
+const ope = (type, ev) => {
+  console.log(type, ev)
 }
 
 const loadmore = () => {
@@ -27,9 +19,7 @@ const click = () => {
     <ScrollView
       class="scroll-view"
       :mouse="true"
-      @mousemove="mousemove"
-      @touchmove="touchmove"
-      @wheelscroll="wheelscroll"
+      @ope="ope"
       @loadmore="loadmore"
     >
       <div class="content" @click="click"></div>
