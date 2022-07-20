@@ -10,7 +10,7 @@ const click = (val) => {
 </script>
 
 <template>
-  <div class="collapse-wrap">
+  <div class="collapse-view-wrap">
     <CollapseView class="collapse-view" v-model:open="open" @click="click">
       <div class="btn">折叠按钮</div>
       <template #content>
@@ -22,7 +22,7 @@ const click = (val) => {
 </template>
 
 <style scoped lang="scss">
-.collapse-wrap {
+.collapse-view-wrap {
   width: 100%;
   height: 100%;
   .collapse-view {
