@@ -17,19 +17,23 @@ const emits = defineEmits<{
   (event: 'click', val: boolean): void
 }>()
 
-const childWrap = ref()
-const childH = ref('0px')
+const contentWrap = ref()
+const contentH = ref('0px')
 
 const getDelta = computed(() => {
   return `${props.delta}s`
 })
 
 onMounted(() => {
-  childH.value = childWrap.value ? `${childWrap.value.clientHeight}px` : '0px'
+  contentH.value = contentWrap.value
+    ? `${contentWrap.value.clientHeight}px`
+    : '0px'
 })
 
 onUpdated(() => {
-  childH.value = childWrap.value ? `${childWrap.value.clientHeight}px` : '0px'
+  contentH.value = contentWrap.value
+    ? `${contentWrap.value.clientHeight}px`
+    : '0px'
 })
 
 const click = () => {
@@ -40,12 +44,12 @@ const click = () => {
 
 <template>
   <div class="collapse" :class="{ isOpen: open }">
-    <div class="main" @click="click">
+    <div @click="click">
       <slot></slot>
     </div>
-    <div class="child">
-      <div ref="childWrap">
-        <slot name="childs"></slot>
+    <div class="content">
+      <div ref="contentWrap">
+        <slot name="content"></slot>
       </div>
     </div>
   </div>
@@ -54,14 +58,14 @@ const click = () => {
 <style scoped lang="scss">
 .collapse {
   position: relative;
-  .child {
+  .content {
     overflow: hidden;
     max-height: 0;
     transition: max-height v-bind(getDelta) ease-in-out;
   }
   &.isOpen {
-    .child {
-      max-height: v-bind(childH);
+    .content {
+      max-height: v-bind(contentH);
     }
   }
 }

@@ -13,7 +13,7 @@ const click = (val) => {
   <div class="collapse-wrap">
     <CollapseView class="collapse-view" v-model:open="open" @click="click">
       <div class="btn">折叠按钮</div>
-      <template #childs>
+      <template #content>
         <div class="content"></div>
       </template>
     </CollapseView>
