@@ -33,15 +33,13 @@ const pause = () => {
 .video-player-wrap {
   width: 100%;
   height: 100%;
-
   .video-player {
     width: 400px;
     height: 300px;
-
     .water-mask {
       position: absolute;
-      right: 20px;
       top: 20px;
+      right: 20px;
       width: 100px;
       height: 50px;
       background: url('@/assets/mask.png');
