@@ -2,7 +2,7 @@
 import { onBeforeUnmount, onMounted, ref, getCurrentInstance, watch } from 'vue'
 import videojs, { type VideoJsPlayerOptions } from 'video.js'
 import 'video.js/dist/video-js.css'
-import './custom-theme.css'
+import './videoPlayer.css'
 
 const props = withDefaults(
   defineProps<{

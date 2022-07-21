@@ -1,13 +1,6 @@
 <script setup lang="ts">
 import { ResizeObserver as Polyfill } from '@juggle/resize-observer'
-import {
-  onBeforeUnmount,
-  onMounted,
-  onUpdated,
-  ref,
-  watch,
-  computed
-} from 'vue'
+import { onBeforeUnmount, onMounted, onUpdated, ref, watch } from 'vue'
 import { debounce } from '@/utils'
 
 const ResizeObserver = window.ResizeObserver || Polyfill
@@ -16,48 +9,37 @@ const content = ref()
 
 // 每列高度
 const colHeight: number[] = []
+// 每列宽度，以第一个列表项宽度为准
+let colWidth = 0
 let colNum = 0
 let marginL = 0
 let contentH = 0
 // 当前正在渲染的元素索引
 let renderIndex = 0
-let renderDistance = 0
-// 瀑布流是否渲染完毕
-let isRenderFinish = true
-let isDelayRender = false
-let isUnmount = false
+// 瀑布流是否在渲染
+let isRendering = false
+// 是否需要重新渲染
+let needReRender = false
 
 const props = withDefaults(
   defineProps<{
-    id: string
-    width: number
-    data: any[]
-    dataKey: string
+    id: number
+    loadRatio?: number // 达到内容尺寸的多少比例触发加载更多
   }>(),
   {
-    id: '',
-    width: 300,
-    data: () => [],
-    dataKey: ''
+    id: 0,
+    loadRatio: 0.75
   }
 )
 
 const emit = defineEmits(['loadMore'])
-
-const getWidth = computed(() => {
-  return props.width
-})
 
 watch(
   () => {
     return props.id
   },
   () => {
-    if (isRenderFinish) {
-      renderIndex = 0
-    } else {
-      isDelayRender = true
-    }
+    reRender(false)
   }
 )
 
@@ -65,14 +47,11 @@ onMounted(() => {
   resizeOb.observe(container.value)
   container.value.removeEventListener('scroll', onScroll)
   container.value.addEventListener('scroll', onScroll)
-  container.value.style['min-width'] = getWidth.value * 2
 
-  calcParams()
   render()
 })
 
 onBeforeUnmount(() => {
-  isUnmount = true
   resizeOb.disconnect()
 })
 
@@ -80,62 +59,56 @@ onUpdated(() => {
   render()
 })
 
-const onResize: any = debounce(() => {
-  calcParams()
-
-  if (isRenderFinish) {
-    renderIndex = 0
-    render()
+const reRender = (runRender) => {
+  if (isRendering) {
+    needReRender = true
   } else {
-    isDelayRender = true
+    renderIndex = 0
+    if (runRender) {
+      render()
+    }
   }
-}, 500)
+}
 
 const onScroll = () => {
   loadMore()
 }
 
-const calcParams = () => {
-  if (isUnmount) {
+const render = async () => {
+  if (isRendering) {
     return
   }
 
-  colNum = Math.floor(container.value.clientWidth / getWidth.value)
-  marginL = (container.value.clientWidth - colNum * getWidth.value) / 2
-  renderDistance = container.value.clientHeight
+  isRendering = true
+  calcParams()
+  await layout()
+  isRendering = false
+  afterRender()
 }
 
-const render = async () => {
-  if (isUnmount) {
-    return
+const calcParams = () => {
+  if (renderIndex !== 0) return
+
+  colWidth = content.value.children[0].clientWidth
+  colNum = Math.floor(container.value.clientWidth / colWidth)
+  colNum = colNum < 2 ? 2 : colNum
+  marginL = (container.value.clientWidth - colNum * colWidth) / 2
+  marginL = marginL < 0 ? 0 : marginL
+  contentH = 0
+  colHeight.length = colNum
+  for (let i = 0; i < colHeight.length; i++) {
+    colHeight[i] = 0
   }
+}
 
-  if (props.data.length === 0) {
-    content.value.style.height = '0px'
-    return
-  }
-
-  if (!isRenderFinish) {
-    return
-  }
-
-  isRenderFinish = false
-
+const layout = async () => {
   const len = content.value.children.length
   const items = [...content.value.children]
-
-  if (renderIndex === 0) {
-    contentH = 0
-    colHeight.length = colNum
-    for (let i = 0; i < colHeight.length; i++) {
-      colHeight[i] = 0
-    }
-  }
 
   for (let i = renderIndex; i < len; i++) {
     const index = getMinHColumn()
     await loadImg(items[i])
-    const newX = Math.floor(marginL + getWidth.value * index)
+    const newX = Math.floor(marginL + colWidth * index)
     const newY = Math.floor(colHeight[index])
     items[i].style.transform = `translate(${newX}px, ${newY}px)`
     colHeight[index] += items[i].clientHeight
@@ -145,15 +118,7 @@ const render = async () => {
     }
   }
 
-  isRenderFinish = true
-  if (isDelayRender) {
-    isDelayRender = false
-    renderIndex = 0
-    render()
-  } else {
-    renderIndex = len
-    loadMore()
-  }
+  renderIndex = len
 }
 
 const getMinHColumn = () => {
@@ -198,32 +163,40 @@ const loadImg = (item) => {
   return Promise.all(arr)
 }
 
-const loadMore = () => {
-  if (isUnmount) {
-    return
+const afterRender = () => {
+  if (needReRender) {
+    needReRender = false
+    renderIndex = 0
+    render()
+  } else {
+    loadMore()
   }
+}
 
-  if (!isRenderFinish) {
+const loadMore = () => {
+  if (isRendering) {
     return
   }
 
   if (
-    contentH - container.value.scrollTop <=
-    container.value.clientHeight + renderDistance
+    container.value.clientHeight + container.value.scrollTop >=
+    contentH * props.loadRatio
   ) {
     emit('loadMore')
   }
 }
 
-const resizeOb = new ResizeObserver(onResize)
+const resizeOb = new ResizeObserver(
+  debounce(() => {
+    reRender(true)
+  }, 500)
+)
 </script>
 
 <template>
   <div class="container" ref="container">
     <div class="content" ref="content">
-      <div v-for="item in data" :key="item[dataKey]" class="item">
-        <slot :scope="item"></slot>
-      </div>
+      <slot></slot>
     </div>
     <slot name="bottom"></slot>
   </div>
@@ -236,13 +209,7 @@ const resizeOb = new ResizeObserver(onResize)
   height: 100%;
   .content {
     position: relative;
-    .item {
-      will-change: transform;
-      transform: translate(-100%, -100%);
-      position: absolute;
-      top: 0;
-      left: 0;
-    }
+    overflow: hidden;
   }
 }
 </style>
