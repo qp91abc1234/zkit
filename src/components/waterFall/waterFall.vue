@@ -88,6 +88,7 @@ const render = async () => {
 
 const calcParams = () => {
   if (renderIndex !== 0) return
+  if (content.value.children.length === 0) return
 
   colWidth = content.value.children[0].clientWidth
   colNum = Math.floor(container.value.clientWidth / colWidth)
@@ -207,6 +208,9 @@ const resizeOb = new ResizeObserver(
   overflow-y: scroll;
   width: 100%;
   height: 100%;
+  &::-webkit-scrollbar {
+    display: none;
+  }
   .content {
     position: relative;
     overflow: hidden;
