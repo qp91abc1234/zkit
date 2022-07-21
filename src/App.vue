@@ -4,8 +4,9 @@ import VideoPlayerDemo from '@/examples/videoPlayer/index.vue'
 import ScrollViewDemo from '@/examples/scrollView/index.vue'
 import CollapseViewDemo from '@/examples/collapseView/index.vue'
 import SubsectionDemo from '@/examples/subsection/index.vue'
+import WaterFallDemo from '@/examples/waterFall/index.vue'
 
-const index = ref('subsectionDemo')
+const index = ref('waterFallDemo')
 </script>
 
 <template>
@@ -13,6 +14,7 @@ const index = ref('subsectionDemo')
   <ScrollViewDemo v-if="index === 'scrollViewDemo'"></ScrollViewDemo>
   <CollapseViewDemo v-if="index === 'collapseViewDemo'"></CollapseViewDemo>
   <SubsectionDemo v-if="index === 'subsectionDemo'"></SubsectionDemo>
+  <WaterFallDemo v-if="index === 'waterFallDemo'"></WaterFallDemo>
 </template>
 
 <style scoped lang="scss"></style>
