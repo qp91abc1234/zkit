@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import WaterFall from '@/components/waterFall/waterFall.vue'
-import '@/components/waterFall/waterFall.css'
 
 const imgUrls = ref<string[]>([
   'https://tse1-mm.cn.bing.net/th/id/OIP-C.1ChedSsZH_Uw30w2BhWAmQHaHa?w=209&h=209&c=7&r=0&o=5&dpr=1.1&pid=1.7',
@@ -15,7 +14,7 @@ const imgUrls = ref<string[]>([
 
 <template>
   <div class="waterFall-wrap">
-    <WaterFall class="waterfall" :id="0">
+    <WaterFall class="waterfall" id="0">
       <div v-for="item in imgUrls" :key="item" class="zkit-waterfall-item">
         <img class="img" :src="item" />
       </div>

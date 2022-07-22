@@ -1,7 +1,0 @@
-.zkit-waterfall-item {
-  will-change: transform;
-  transform: translate(-100%, -100%);
-  position: absolute;
-  top: 0;
-  left: 0;
-}

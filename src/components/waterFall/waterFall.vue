@@ -23,11 +23,11 @@ let needReRender = false
 
 const props = withDefaults(
   defineProps<{
-    id: number
+    id: string
     loadRatio?: number // 达到内容尺寸的多少比例触发加载更多
   }>(),
   {
-    id: 0,
+    id: '',
     loadRatio: 0.75
   }
 )
@@ -109,6 +109,9 @@ const layout = async () => {
   for (let i = renderIndex; i < len; i++) {
     const index = getMinHColumn()
     await loadImg(items[i])
+    if (needReRender) {
+      break
+    }
     const newX = Math.floor(marginL + colWidth * index)
     const newY = Math.floor(colHeight[index])
     items[i].style.transform = `translate(${newX}px, ${newY}px)`
@@ -215,5 +218,14 @@ const resizeOb = new ResizeObserver(
     position: relative;
     overflow: hidden;
   }
+}
+</style>
+<style lang="scss">
+.zkit-waterfall-item {
+  will-change: transform;
+  transform: translate(-100%, -100%);
+  position: absolute !important;
+  top: 0;
+  left: 0;
 }
 </style>
