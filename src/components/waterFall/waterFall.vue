@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ResizeObserver as Polyfill } from '@juggle/resize-observer'
-import { onBeforeUnmount, onMounted, onUpdated, ref, watch } from 'vue'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { debounce } from '@/utils'
 
 const ResizeObserver = window.ResizeObserver || Polyfill
@@ -20,15 +20,16 @@ let renderIndex = 0
 let isRendering = false
 // 是否需要重新渲染
 let needReRender = false
+let needContinueRender = false
 
 const props = withDefaults(
   defineProps<{
-    id: string
-    loadRatio?: number // 达到内容尺寸的多少比例触发加载更多
+    data: any[]
+    loadDis?: number
   }>(),
   {
-    id: '',
-    loadRatio: 0.75
+    data: () => [],
+    loadDis: 300
   }
 )
 
@@ -36,10 +37,17 @@ const emit = defineEmits(['loadMore'])
 
 watch(
   () => {
-    return props.id
+    return props.data
   },
   () => {
-    reRender(false)
+    if (isRendering) {
+      needContinueRender = true
+    } else {
+      render()
+    }
+  },
+  {
+    flush: 'post'
   }
 )
 
@@ -47,26 +55,18 @@ onMounted(() => {
   resizeOb.observe(container.value)
   container.value.removeEventListener('scroll', onScroll)
   container.value.addEventListener('scroll', onScroll)
-
-  render()
 })
 
 onBeforeUnmount(() => {
   resizeOb.disconnect()
 })
 
-onUpdated(() => {
-  render()
-})
-
-const reRender = (runRender) => {
+const reRender = () => {
   if (isRendering) {
     needReRender = true
   } else {
     renderIndex = 0
-    if (runRender) {
-      render()
-    }
+    render()
   }
 }
 
@@ -87,8 +87,7 @@ const render = async () => {
 }
 
 const calcParams = () => {
-  if (renderIndex !== 0) return
-  if (content.value.children.length === 0) return
+  if (renderIndex !== 0 || content.value.children.length === 0) return
 
   colWidth = content.value.children[0].clientWidth
   colNum = Math.floor(container.value.clientWidth / colWidth)
@@ -109,9 +108,15 @@ const layout = async () => {
   for (let i = renderIndex; i < len; i++) {
     const index = getMinHColumn()
     await loadImg(items[i])
+    await new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(null)
+      }, 50)
+    })
     if (needReRender) {
       break
     }
+
     const newX = Math.floor(marginL + colWidth * index)
     const newY = Math.floor(colHeight[index])
     items[i].style.transform = `translate(${newX}px, ${newY}px)`
@@ -168,7 +173,10 @@ const loadImg = (item) => {
 }
 
 const afterRender = () => {
-  if (needReRender) {
+  if (needContinueRender) {
+    needContinueRender = false
+    render()
+  } else if (needReRender) {
     needReRender = false
     renderIndex = 0
     render()
@@ -183,8 +191,8 @@ const loadMore = () => {
   }
 
   if (
-    container.value.clientHeight + container.value.scrollTop >=
-    contentH * props.loadRatio
+    container.value.clientHeight + container.value.scrollTop + props.loadDis >=
+    contentH
   ) {
     emit('loadMore')
   }
@@ -192,8 +200,8 @@ const loadMore = () => {
 
 const resizeOb = new ResizeObserver(
   debounce(() => {
-    reRender(true)
-  }, 500)
+    reRender()
+  }, 100)
 )
 </script>
 
