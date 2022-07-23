@@ -61,15 +61,6 @@ onBeforeUnmount(() => {
   resizeOb.disconnect()
 })
 
-const reRender = () => {
-  if (isRendering) {
-    needReRender = true
-  } else {
-    renderIndex = 0
-    render()
-  }
-}
-
 const onScroll = () => {
   loadMore()
 }
@@ -108,15 +99,9 @@ const layout = async () => {
   for (let i = renderIndex; i < len; i++) {
     const index = getMinHColumn()
     await loadImg(items[i])
-    await new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(null)
-      }, 50)
-    })
     if (needReRender) {
       break
     }
-
     const newX = Math.floor(marginL + colWidth * index)
     const newY = Math.floor(colHeight[index])
     items[i].style.transform = `translate(${newX}px, ${newY}px)`
@@ -200,7 +185,12 @@ const loadMore = () => {
 
 const resizeOb = new ResizeObserver(
   debounce(() => {
-    reRender()
+    if (isRendering) {
+      needReRender = true
+    } else {
+      renderIndex = 0
+      render()
+    }
   }, 100)
 )
 </script>
