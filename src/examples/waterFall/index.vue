@@ -14,7 +14,7 @@ const imgUrls = ref<string[]>([
 
 <template>
   <div class="waterFall-wrap">
-    <WaterFall class="waterfall" id="0">
+    <WaterFall class="waterfall" id="0" :data="imgUrls">
       <div v-for="item in imgUrls" :key="item" class="zkit-waterfall-item">
         <img class="img" :src="item" />
       </div>

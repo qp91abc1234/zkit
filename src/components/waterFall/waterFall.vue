@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { ResizeObserver as Polyfill } from '@juggle/resize-observer'
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { debounce } from '@/utils'
+import { debounce } from '@/utils/index'
 
 const ResizeObserver = window.ResizeObserver || Polyfill
 const container = ref()
 const content = ref()
 
+// 数据 id
+let id = ''
 // 每列高度
 const colHeight: number[] = []
 // 每列宽度，以第一个列表项宽度为准
@@ -20,14 +22,17 @@ let renderIndex = 0
 let isRendering = false
 // 是否需要重新渲染
 let needReRender = false
+// 是否需要连续渲染
 let needContinueRender = false
 
 const props = withDefaults(
   defineProps<{
+    id: string
     data: any[]
     loadDis?: number
   }>(),
   {
+    id: '',
     data: () => [],
     loadDis: 300
   }
@@ -40,7 +45,10 @@ watch(
     return props.data
   },
   () => {
-    if (isRendering) {
+    if (id !== props.id) {
+      id = props.id
+      reRender()
+    } else if (isRendering) {
       needContinueRender = true
     } else {
       render()
@@ -55,6 +63,7 @@ onMounted(() => {
   resizeOb.observe(container.value)
   container.value.removeEventListener('scroll', onScroll)
   container.value.addEventListener('scroll', onScroll)
+  id = props.id
 })
 
 onBeforeUnmount(() => {
@@ -66,10 +75,6 @@ const onScroll = () => {
 }
 
 const render = async () => {
-  if (isRendering) {
-    return
-  }
-
   isRendering = true
   calcParams()
   await layout()
@@ -86,6 +91,7 @@ const calcParams = () => {
   marginL = (container.value.clientWidth - colNum * colWidth) / 2
   marginL = marginL < 0 ? 0 : marginL
   contentH = 0
+  content.value.style.height = `${contentH}px`
   colHeight.length = colNum
   for (let i = 0; i < colHeight.length; i++) {
     colHeight[i] = 0
@@ -183,16 +189,16 @@ const loadMore = () => {
   }
 }
 
-const resizeOb = new ResizeObserver(
-  debounce(() => {
-    if (isRendering) {
-      needReRender = true
-    } else {
-      renderIndex = 0
-      render()
-    }
-  }, 100)
-)
+const reRender = () => {
+  if (isRendering) {
+    needReRender = true
+  } else {
+    renderIndex = 0
+    render()
+  }
+}
+
+const resizeOb = new ResizeObserver(debounce(reRender, 300, true))
 </script>
 
 <template>
