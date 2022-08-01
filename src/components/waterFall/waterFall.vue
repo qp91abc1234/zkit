@@ -83,19 +83,22 @@ const render = async () => {
 }
 
 const calcParams = () => {
-  if (renderIndex !== 0 || content.value.children.length === 0) return
+  if (renderIndex !== 0) return
 
-  colWidth = content.value.children[0].clientWidth
-  colNum = Math.floor(container.value.clientWidth / colWidth)
-  colNum = colNum < 2 ? 2 : colNum
-  marginL = (container.value.clientWidth - colNum * colWidth) / 2
-  marginL = marginL < 0 ? 0 : marginL
+  if (content.value.children.length > 0) {
+    colWidth = content.value.children[0].clientWidth
+    colNum = Math.floor(container.value.clientWidth / colWidth)
+    colNum = colNum < 2 ? 2 : colNum
+    marginL = (container.value.clientWidth - colNum * colWidth) / 2
+    marginL = marginL < 0 ? 0 : marginL
+    colHeight.length = colNum
+    for (let i = 0; i < colHeight.length; i++) {
+      colHeight[i] = 0
+    }
+  }
+
   contentH = 0
   content.value.style.height = `${contentH}px`
-  colHeight.length = colNum
-  for (let i = 0; i < colHeight.length; i++) {
-    colHeight[i] = 0
-  }
 }
 
 const layout = async () => {
